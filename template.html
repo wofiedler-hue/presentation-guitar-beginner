@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meine Präsentation - Template</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --app-bg: #ffffff;
+            --slide-bg: #f9fafb;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            background-color: var(--app-bg);
+            transition: background-color 0.5s ease;
+        }
+
+        /* Pastel Themes */
+        body.theme-beige { --app-bg: #F5F5DC; --slide-bg: #FDF5E6; }
+        body.theme-orange { --app-bg: #FFDAB9; --slide-bg: #FFF5EE; }
+        body.theme-grey { --app-bg: #E5E4E2; --slide-bg: #F5F5F5; }
+        body.theme-brown { --app-bg: #D2B48C; --slide-bg: #F4ECE1; }
+        body.theme-yellow { --app-bg: #FFFACD; --slide-bg: #FFFFF0; }
+
+        .slide-container {
+            transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .list-item-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, opacity 0.3s ease;
+            opacity: 0;
+        }
+        .list-item-content.expanded {
+            max-height: 200px;
+            opacity: 1;
+        }
+        .lightbox {
+            display: none;
+            background: rgba(0,0,0,0.95);
+            backdrop-filter: blur(15px);
+        }
+        .lightbox.active {
+            display: flex;
+        }
+        #floating-menu {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(20px);
+            opacity: 0;
+            pointer-events: none;
+        }
+        #floating-menu.active {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 10px; }
+        #slide-viewport { background-color: var(--slide-bg); transition: background-color 0.5s ease; }
+    </style>
+</head>
+<body class="text-gray-900">
+    <div id="app" class="flex flex-col h-screen">
+        
+        <!-- HEADER -->
+        <header class="h-20 flex items-center justify-between px-10 border-b border-gray-100 z-20 bg-inherit">
+            <div class="flex items-center space-x-8">
+                <div class="flex items-center space-x-4">
+                    <div class="w-10 h-10 bg-black rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-lg">P</div>
+                    <div>
+                        <h1 class="text-xl font-bold tracking-tight">Eigener Titel</h1>
+                        <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Präsentation</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-2 border-l border-gray-100 pl-8">
+                    <button onclick="window.app.setTheme('default')" class="w-5 h-5 rounded-full border border-gray-200 bg-white" title="Standard"></button>
+                    <button onclick="window.app.setTheme('beige')" class="w-5 h-5 rounded-full border border-gray-200 bg-[#F5F5DC]" title="Beige"></button>
+                    <button onclick="window.app.setTheme('orange')" class="w-5 h-5 rounded-full border border-gray-200 bg-[#FFDAB9]" title="Orange"></button>
+                    <button onclick="window.app.setTheme('grey')" class="w-5 h-5 rounded-full border border-gray-200 bg-[#E5E4E2]" title="Grau"></button>
+                    <button onclick="window.app.setTheme('brown')" class="w-5 h-5 rounded-full border border-gray-200 bg-[#D2B48C]" title="Braun"></button>
+                    <button onclick="window.app.setTheme('yellow')" class="w-5 h-5 rounded-full border border-gray-200 bg-[#FFFACD]" title="Gelb"></button>
+                </div>
+            </div>
+            <div class="flex items-center space-x-6">
+                <a href="elemente.html" class="text-xs font-bold uppercase tracking-widest text-gray-400 hover:text-black transition-colors">Elemente</a>
+                <div id="slide-timer" class="text-sm font-mono text-gray-400 border-l border-gray-100 pl-6">00:00</div>
+            </div>
+        </header>
+
+        <!-- VIEWPORT -->
+        <main id="slide-viewport" class="flex-grow relative overflow-hidden">
+            <!-- Dynamisch geladen aus data.js -->
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="h-24 border-t border-gray-100 bg-white flex items-center px-10 z-20">
+            <div class="w-1/4 flex items-center">
+                <div class="text-sm font-bold text-gray-400 uppercase tracking-tighter">
+                    Index <span id="current-index" class="text-black ml-2">--</span> / <span id="total-slides">--</span>
+                </div>
+            </div>
+            <div class="w-2/4 flex items-center justify-center space-x-8">
+                <button id="prev-btn" class="p-4 hover:bg-gray-100 rounded-full transition-all group">
+                    <svg class="h-6 w-6 text-gray-400 group-hover:text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                </button>
+                <h2 id="footer-slide-title" class="text-lg font-black text-gray-900 uppercase tracking-widest min-w-[300px] text-center truncate">Lade...</h2>
+                <button id="next-btn" class="p-4 hover:bg-gray-100 rounded-full transition-all group">
+                    <svg class="h-6 w-6 text-gray-400 group-hover:text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </div>
+            <div class="w-1/4 flex items-center justify-end space-x-6">
+                <div id="progress-dots" class="flex space-x-2"></div>
+                <button id="menu-toggle" onclick="window.app.toggleMenu()" class="p-4 bg-black text-white rounded-full shadow-lg transition-all hover:scale-110">
+                    <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- QUICK NAV MENU -->
+    <div id="floating-menu" class="fixed bottom-28 right-10 w-72 bg-white/80 backdrop-blur-xl border border-gray-100 rounded-3xl shadow-2xl p-4 z-50">
+        <h3 class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-4 px-2">Navigation</h3>
+        <div id="menu-items" class="space-y-1 max-h-96 overflow-y-auto"></div>
+    </div>
+
+    <!-- LIGHTBOX -->
+    <div id="lightbox" class="lightbox fixed inset-0 z-[100] items-center justify-center p-10 cursor-zoom-out">
+        <div class="lightbox-content w-full h-full flex items-center justify-center pointer-events-auto"></div>
+        <button class="absolute top-10 right-10 text-white/50 hover:text-white">
+            <svg class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script type="module" src="index.js"></script>
+</body>
+</html>
